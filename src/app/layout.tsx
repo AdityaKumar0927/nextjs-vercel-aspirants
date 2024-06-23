@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Inter, Rubik, Space_Grotesk } from 'next/font/google';
-import Header from './[locale]/components/Header';
-import Sidebar from './[locale]/components/Sidebar';
+import Header from './[locale]/components/Header'; // Adjusted path
+import Sidebar from './[locale]/components/Sidebar'; // Adjusted path
 import './globals.css';
 
 const inter = Inter({

@@ -13,7 +13,7 @@ const Header: React.FC<HeaderProps> = ({ showSidebar }) => {
     <header className="flex justify-between items-center p-4 border-b border-gray-200">
       <div className="flex items-center space-x-2">
         {/* This Link ensures the logo is clickable and returns to the home page */}
-        <Link href="/page.tsx" className="inline-block font-cute bg-purple-100 text-purple-400 px-4 py-2 rounded-full hover:bg-purple-200 transition duration-300">
+        <Link href="/" className="inline-block font-cute bg-purple-100 text-purple-400 px-4 py-2 rounded-full hover:bg-purple-200 transition duration-300">
           <i className="fas fa-pencil text-bold"></i> aspirants
         </Link>
       </div>
