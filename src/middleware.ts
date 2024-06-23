@@ -3,11 +3,6 @@ import createIntlMiddleware from 'next-intl/middleware';
 
 const protectedRoutes = ['/protected', '/api/protected'];
 
-const intlMiddleware = createIntlMiddleware({
-  locales: ['en', 'fr', 'de', 'es', 'ja', 'ru', 'fa', 'ar'],
-  defaultLocale: 'en',
-});
-
 const customMiddleware = async (req: NextRequest) => {
   const sessionToken = req.cookies.get('session'); // Use cookies to retrieve the session token
   if (!sessionToken && protectedRoutes.some(route => req.nextUrl.pathname.startsWith(route))) {
@@ -24,7 +19,7 @@ export default async function middleware(req: NextRequest) {
   if (result instanceof NextResponse) {
     return result;
   }
-  return intlMiddleware(req);
+  return middleware(req);
 }
 
 export const config = {
