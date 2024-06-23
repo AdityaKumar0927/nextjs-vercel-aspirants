@@ -11,7 +11,10 @@ const nextConfig = {
     AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID,
     AUTH0_ISSUER_BASE_URL: process.env.AUTH0_ISSUER_BASE_URL,
     MONGODB_URI: process.env.MONGODB_URI,
-  }
+  },
+  images: {
+    domains: ['placehold.co'],
+}
 };
 
 module.exports = withNextIntl(nextConfig);

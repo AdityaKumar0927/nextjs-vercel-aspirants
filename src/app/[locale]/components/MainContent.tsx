@@ -1,12 +1,12 @@
+// src/app/[locale]/components/MainContent.tsx
 "use client";
 
 import React, { useState } from 'react';
-import UserDashboard from './UserDashboard';
-import Footer from './Footer';
+import { useRouter } from 'next/router';
 import Sidebar from './Sidebar';
+import Footer from './Footer';
 import Question from './Question';
-import sampleQuestions from './sampleQuestions.json'; // Adjust the path to your JSON file
-import { useRouter } from 'next/navigation';
+import sampleQuestions from './sampleQuestions.json';
 
 const MainContent: React.FC = () => {
   const [currentView, setCurrentView] = useState('home');
@@ -16,9 +16,6 @@ const MainContent: React.FC = () => {
   const [markedForReview, setMarkedForReview] = useState<string[]>([]);
   const [markedComplete, setMarkedComplete] = useState<string[]>([]);
   const [showUserDashboard, setShowUserDashboard] = useState(false);
-  const router = useRouter();
-
-  const user = { sub: '123', name: 'John Doe', email: 'john.doe@example.com' }; // Replace with actual user data
 
   const handleOptionClick = (questionId: string, option: string, correctOption: string) => {
     setFeedback({
@@ -50,19 +47,16 @@ const MainContent: React.FC = () => {
 
   const handleMarkForReview = (questionId: string) => {
     setMarkedForReview((prev) =>
-      prev.includes(questionId) ? prev.filter(id => id !== questionId) : [...prev, questionId]
+      prev.includes(questionId) ? prev.filter((id) => id !== questionId) : [...prev, questionId]
     );
   };
 
   const handleMarkComplete = (questionId: string) => {
     setMarkedComplete((prev) =>
-      prev.includes(questionId) ? prev.filter(id => id !== questionId) : [...prev, questionId]
+      prev.includes(questionId) ? prev.filter((id) => id !== questionId) : [...prev, questionId]
     );
   };
 
-  const handleSettingsClick = () => {
-    router.push('/settings');
-  };
 
   const handleUserDashboardClick = () => {
     setShowUserDashboard(true);
@@ -79,7 +73,7 @@ const MainContent: React.FC = () => {
           <>
             <main className="text-center py-16 px-4">
               <div className="inline-block bg-purple-100 text-purple-700 px-4 py-2 rounded-full mb-4">
-                <i className="fas fa-magic"></i> Aspire. Prepare. Succeed. 
+                <i className="fas fa-magic"></i> Aspire. Prepare. Succeed.
               </div>
               <h1 className="text-4xl font-bold mb-4">
                 Study for CUET & JEE exams with <span className="text-blue-500">aspirants</span>
@@ -100,7 +94,7 @@ const MainContent: React.FC = () => {
               <div className="bg-white shadow-blue-300 rounded-lg overflow-hidden w-full max-w-4xl border-2">
                 <div className="flex items-center p-4 border-b border-blue-300"></div>
                 <div className="flex">
-                  <Sidebar onSettingsClick={handleSettingsClick} onUserDashboardClick={handleUserDashboardClick} />
+                  <Sidebar onSettingsClick={handleUserDashboardClick} onUserDashboardClick={handleUserDashboardClick} />
                   <main className="w-3/4 p-4">
                     <div className="flex items-center space-x-2 text-gray-500 text-sm mb-4">
                       <span>JEE</span>
@@ -151,7 +145,6 @@ const MainContent: React.FC = () => {
   return (
     <>
       {renderView()}
-      {showUserDashboard && <UserDashboard user={user} onClose={handleCloseUserDashboard} examData={[]} />}
     </>
   );
 };

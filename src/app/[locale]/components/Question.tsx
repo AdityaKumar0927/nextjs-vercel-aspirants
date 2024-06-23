@@ -1,4 +1,4 @@
-"use client"; // Add this directive
+"use client";
 
 import React, { useState } from 'react';
 import Latex from 'react-latex-next';
@@ -39,20 +39,29 @@ const Question: React.FC<QuestionProps> = ({
   handleMarkForReview,
   handleMarkComplete,
   isMarkedForReview,
-  isMarkedComplete
+  isMarkedComplete,
 }) => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showMarkschemeLocal, setShowMarkschemeLocal] = useState<boolean>(false);
 
+  const handleAttempt = () => {
+    if (!isMarkedComplete) {
+      handleMarkComplete(question.questionId);
+    }
+  };
+
   const handleOptionClickLocal = (option: string) => {
     setSelectedOption(option);
-    const optionIndex = question.options?.findIndex((opt: string) => opt.startsWith(option));
-    const correctOption = question.correctOption ? String.fromCharCode(65 + (optionIndex || 0)) : 'no answer';
+    handleAttempt();
+    const correctOption = question.correctOption || '';
+    const isCorrect = option === correctOption;
     handleOptionClick(question.questionId, option, correctOption);
   };
 
   const handleNumericalSubmitLocal = () => {
-    const correctAnswer = question.correctOption || 'no answer';
+    handleAttempt();
+    const correctAnswer = question.correctOption || '';
+    const isCorrect = numericalAnswer === correctAnswer;
     handleNumericalSubmit(question.questionId, numericalAnswer || '', correctAnswer);
   };
 

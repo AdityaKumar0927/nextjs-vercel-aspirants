@@ -1,3 +1,4 @@
+"use client";
 // src/utils/QuestionGenerator.js
 const generateQuestions = (text) => {
     const questions = [];

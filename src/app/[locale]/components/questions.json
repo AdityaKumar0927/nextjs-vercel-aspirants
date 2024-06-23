@@ -9,7 +9,7 @@
     "reviewed": false,
     "completed": false,
     "options": ["302", "306", "304", "308"],
-    "correctOption": "308",
+    "correctOption": "D",
     "markscheme": "The correct answer is \\(\\lambda = \\pm 4\\). Therefore, the sum of \\(\\lambda\\) is 0, and \\(8\\left|\\sum_{\\lambda \\in \\mathrm{S}} \\lambda\\right|\\) is 0."
   },
   {

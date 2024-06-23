@@ -1,5 +1,9 @@
+// src/components/BrowseResources.tsx
+"use client";
+
 import React from 'react';
 import { useRouter } from 'next/router';
+import Image from 'next/image';
 
 interface Course {
   title: string;
@@ -38,7 +42,7 @@ const BrowseResources: React.FC = () => {
           Courses <span className="bg-green-500 text-white px-2 py-1 rounded-full text-sm ml-2">Hands-on learning</span>
         </h1>
         <p className="mt-2">
-          Don't waste your Summer and Winter breaks. It's time to roll up your sleeves—we learn best by doing. All of our courses are interactive, combining short videos with hands-on exercises.
+          Don&apos;t waste your Summer and Winter breaks. It&apos;s time to roll up your sleeves—we learn best by doing. All of our courses are interactive, combining short videos with hands-on exercises.
         </p>
         <button
           className="mt-4 bg-white text-blue-500 px-4 py-2 rounded-lg"
@@ -71,7 +75,7 @@ const BrowseResources: React.FC = () => {
             <h2 className="text-xl font-semibold mb-2">{course.title}</h2>
             <p className="text-gray-700 mb-4">{course.description}</p>
             <div className="flex items-center mb-4">
-              <img src={course.image} alt={course.alt} className="w-10 h-10 rounded-full mr-3" />
+              <Image src={course.image} alt={course.alt} width={50} height={50} className="rounded-full mr-3" />
               <div>
                 <p className="text-gray-900 font-semibold">{course.instructor}</p>
                 <p className="text-gray-500 text-sm">{course.role}</p>

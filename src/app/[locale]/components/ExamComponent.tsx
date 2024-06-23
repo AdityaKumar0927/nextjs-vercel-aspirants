@@ -1,14 +1,12 @@
-"use client"; // Add this directive
+// src/components/ExamComponent.tsx
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Latex from 'react-latex-next';
 import QuestionExam from './QuestionExam';
 import ExamAnalytics from './ExamAnalytics';
 import FullscreenIcon from './FullScreenIcon';
 import { useRouter } from 'next/router';
-import { useUser, withPageAuthRequired } from '@auth0/nextjs-auth0/client';
-import { getAccessToken } from '@auth0/nextjs-auth0';
-
 
 interface ExamComponentProps {
   questions: Question[];
@@ -45,7 +43,6 @@ const ExamComponent: React.FC<ExamComponentProps> = ({ questions, examTime, onFi
   const [isFullscreen, setIsFullscreen] = useState(false);
   const examRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const { user } = useUser();
 
   useEffect(() => {
     if (!isExamSubmitted && !isPaused) {
@@ -109,7 +106,7 @@ const ExamComponent: React.FC<ExamComponentProps> = ({ questions, examTime, onFi
     setCurrentQuestionIndex((prevIndex) => Math.max(prevIndex - 1, 0));
   };
 
-  const handleSubmitExam = async () => {
+  const handleSubmitExam = useCallback(() => {
     if (isFullscreen) {
       handleFullscreenToggle(); // Exit fullscreen if active
     }
@@ -129,28 +126,7 @@ const ExamComponent: React.FC<ExamComponentProps> = ({ questions, examTime, onFi
       markedComplete,
       questions,
     });
-
-    try {
-      const token = await getAccessToken();
-      await fetch('/api/examResults', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          answers,
-          feedback: newFeedback,
-          timeSpent,
-          markedForReview,
-          markedComplete,
-          questions,
-        }),
-      });
-    } catch (error) {
-      console.error('Error storing exam results:', error);
-    }
-  };
+  }, [answers, onFinishExam, questions, timeSpent, markedForReview, markedComplete]);
 
   const handlePauseExam = () => {
     setIsPaused(!isPaused);

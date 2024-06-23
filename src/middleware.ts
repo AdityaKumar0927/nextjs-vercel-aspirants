@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from '@auth0/nextjs-auth0';
-import createIntlMiddleware from 'next-intl/middleware'; // Adjusted import based on common practices
+import createIntlMiddleware from 'next-intl/middleware';
 
 const protectedRoutes = ['/protected', '/api/protected'];
 
@@ -10,10 +9,8 @@ const intlMiddleware = createIntlMiddleware({
 });
 
 const customMiddleware = async (req: NextRequest) => {
-  const res = NextResponse.next();
-  const session = await getSession(req, res);
-
-  if (!session && protectedRoutes.some(route => req.nextUrl.pathname.startsWith(route))) {
+  const sessionToken = req.cookies.get('session'); // Use cookies to retrieve the session token
+  if (!sessionToken && protectedRoutes.some(route => req.nextUrl.pathname.startsWith(route))) {
     const url = req.nextUrl.clone();
     url.pathname = '/api/auth/login';
     return NextResponse.redirect(url);
@@ -27,7 +24,7 @@ export default async function middleware(req: NextRequest) {
   if (result instanceof NextResponse) {
     return result;
   }
-  return intlMiddleware(result);
+  return intlMiddleware(req);
 }
 
 export const config = {

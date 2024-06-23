@@ -1,11 +1,10 @@
-"use client"; // Add this directive
+"use client"; // Add this directive at the top
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import sampleQuestions from './questions.json'; // Adjust the path to your JSON file
 import parseFile from './PdfParser'; // Adjust the path to your parseFile utility
 import generateQuestions from './QuestionGenerator'; // Adjust the path to your generateQuestions utility
-import DevelopOrUploadAFile from '../DevelopOrUploadAFile'; // Adjust the path to your component
 import Question from './Question'; // Adjust the path to your component
 
 interface MockExamGeneratorProps {
@@ -139,7 +138,8 @@ const MockExamGenerator: React.FC<MockExamGeneratorProps> = ({ onStartExam, onGe
   };
 
   if (step === 'initial') {
-    return <DevelopOrUploadAFile onSelectOption={(option: 'initial' | 'database' | 'file') => setStep(option)} />;
+    router.push('/DevelopOrUploadAFile');
+    return null;
   }
 
   return (

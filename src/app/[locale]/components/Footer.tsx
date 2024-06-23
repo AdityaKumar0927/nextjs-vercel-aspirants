@@ -54,7 +54,7 @@ const Footer: React.FC = () => {
               <div className="w-8 h-8 bg-blue-500 rounded-full mr-2"></div>
               <span className="font-bold text-xl">aspirants</span>
             </div>
-            <p className="text-gray-600 mb-4">Get the latest news about aspirants's new features & product updates.</p>
+            <p className="text-gray-600 mb-4">Get the latest news about aspirants&apos;s new features & product updates.</p>
           </div>
         </div>
         <div className="flex justify-between items-center mt-10">

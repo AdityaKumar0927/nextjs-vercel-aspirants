@@ -1,15 +1,11 @@
-"use client"; // Add this directive
-
+// src/components/UserDashboard.tsx
 import React, { useEffect, useRef } from 'react';
-import Dashboard from './Dashboard';
 
 interface UserDashboardProps {
-  user: any;
   onClose: () => void;
-  examData: any;
 }
 
-const UserDashboard: React.FC<UserDashboardProps> = ({ user, onClose, examData }) => {
+const UserDashboard: React.FC<UserDashboardProps> = ({ onClose }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -38,21 +34,12 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ user, onClose, examData }
             <div className="flex items-center">
               <div className="w-12 h-12 bg-black rounded-full mr-4"></div>
               <div>
-                <h1 className="text-2xl font-semibold">{user ? user.name : 'Guest'}</h1>
-                <h2 className="text-xl">{user ? user.email : 'Guest'}</h2>
+                <h1 className="text-2xl font-semibold">User Dashboard</h1>
               </div>
             </div>
           </header>
-          <Dashboard user={user} examData={examData} />
           <div className="mt-8 text-center">
-            {!user && (
-              <>
-                <p className="text-red-500">You are logged out</p>
-                <button className="bg-blue-500 text-white px-4 py-2 rounded-lg mt-4" onClick={() => window.location.href = '/login'}>
-                  Login
-                </button>
-              </>
-            )}
+            <p>Welcome to the User Dashboard!</p>
           </div>
         </div>
       </div>

@@ -1,13 +1,47 @@
-"use client"; // Add this directive
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import Latex from 'react-latex-next';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import jsPDF from 'jspdf';
 import Question from '../[locale]/components/Question';
+import Sidebar from '../[locale]/components/Sidebar';
+import rawQuestionsData from '../[locale]/components/questions.json';
+
+interface RawQuestionType {
+  questionId: string;
+  text: string;
+  subject: string;
+  difficulty: string;
+  type: string;
+  year: string;
+  options?: string[];
+  correctOption?: string;
+  markscheme?: string;
+}
+
+interface QuestionType {
+  questionId: string;
+  text: string;
+  subject: string;
+  difficulty: string;
+  type: 'Multiple Choice' | 'Numerical';
+  year: string;
+  reviewed: boolean;
+  completed: boolean;
+  options?: string[];
+  correctOption?: string;
+  markscheme?: string;
+}
+
+const questionsData: QuestionType[] = (rawQuestionsData as RawQuestionType[]).map(q => ({
+  ...q,
+  type: q.type as 'Multiple Choice' | 'Numerical',
+  reviewed: false,
+  completed: false,
+}));
 
 const QuestionBank: React.FC = () => {
-  const [questions, setQuestions] = useState<any[]>([]);
-  const [filteredQuestions, setFilteredQuestions] = useState<any[]>([]);
+  const [questions, setQuestions] = useState<QuestionType[]>(questionsData);
+  const [filteredQuestions, setFilteredQuestions] = useState<QuestionType[]>(questionsData);
   const [filters, setFilters] = useState({
     subject: '',
     difficulty: '',
@@ -24,49 +58,10 @@ const QuestionBank: React.FC = () => {
   const [feedback, setFeedback] = useState<Record<string, string>>({});
   const [numericalAnswers, setNumericalAnswers] = useState<Record<string, string>>({});
   const [showMarkscheme, setShowMarkscheme] = useState<Record<string, boolean>>({});
-  const [markedForReview, setMarkedForReview] = useState<string[]>([]);
-  const [markedComplete, setMarkedComplete] = useState<string[]>([]);
 
-  const dropdownTimeout = useRef<any>({});
+  const dropdownTimeout = useRef<Record<string, NodeJS.Timeout>>({});
 
-  useEffect(() => {
-    fetchQuestions();
-  }, []);
-
-  useEffect(() => {
-    filterQuestions(filters);
-  }, [filters, markedForReview, markedComplete]);
-
-  const fetchQuestions = async () => {
-    const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : process.env.REACT_APP_BACKEND_URL;
-    try {
-      const response = await fetch(`${baseUrl}/api/questions`);
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Error fetching questions: ${response.status} ${response.statusText} - ${errorText}`);
-      }
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.indexOf('application/json') !== -1) {
-        const data = await response.json();
-        setQuestions(data);
-        setFilteredQuestions(data);
-      } else {
-        const errorText = await response.text();
-        throw new Error('Expected JSON but received: ' + errorText);
-      }
-    } catch (error) {
-      console.error('Error fetching questions:', error);
-      alert('Failed to fetch questions. Please try again later.');
-    }
-  };
-
-  const handleFilterChange = (tag: string, value: string) => {
-    const newFilters = { ...filters, [tag]: value };
-    setFilters(newFilters);
-    filterQuestions(newFilters);
-  };
-
-  const filterQuestions = (filters: any) => {
+  const filterQuestions = useCallback(() => {
     let filtered = questions.filter(question => {
       return (
         (!filters.subject || question.subject === filters.subject) &&
@@ -75,28 +70,40 @@ const QuestionBank: React.FC = () => {
         (!filters.type || question.type === filters.type)
       );
     });
-
+  
     if (filters.status === 'review') {
-      filtered = filtered.filter(question => markedForReview.includes(question.questionId));
+      filtered = filtered.filter(question => question.reviewed);
     } else if (filters.status === 'complete') {
-      filtered = filtered.filter(question => markedComplete.includes(question.questionId));
+      filtered = filtered.filter(question => question.completed);
     }
-
+  
     setFilteredQuestions(filtered);
+  }, [questions, filters]);
+  
+  useEffect(() => {
+    filterQuestions();
+  }, [filterQuestions]);
+  
+  const handleFilterChange = (tag: string, value: string) => {
+    setFilters(prevFilters => ({ ...prevFilters, [tag]: value }));
   };
 
   const handleOptionClick = (questionId: string, option: string, correctOption: string) => {
+    const isCorrect = option === correctOption;
     setFeedback({
       ...feedback,
-      [questionId]: option === correctOption ? 'correct' : correctOption === 'no answer' ? 'no answer' : 'incorrect',
+      [questionId]: isCorrect ? 'correct' : 'incorrect',
     });
+    markQuestionAsCompleted(questionId);
   };
 
   const handleNumericalSubmit = (questionId: string, userAnswer: string, correctAnswer: string) => {
+    const isCorrect = userAnswer === correctAnswer;
     setFeedback({
       ...feedback,
-      [questionId]: userAnswer === correctAnswer ? 'correct' : correctAnswer === 'no answer' ? 'no answer' : 'incorrect',
+      [questionId]: isCorrect ? 'correct' : 'incorrect',
     });
+    markQuestionAsCompleted(questionId);
   };
 
   const handleNumericalChange = (questionId: string, value: string) => {
@@ -114,14 +121,18 @@ const QuestionBank: React.FC = () => {
   };
 
   const handleMarkForReview = (questionId: string) => {
-    setMarkedForReview((prev) =>
-      prev.includes(questionId) ? prev.filter(id => id !== questionId) : [...prev, questionId]
+    setQuestions(prevQuestions => 
+      prevQuestions.map(q => 
+        q.questionId === questionId ? {...q, reviewed: !q.reviewed} : q
+      )
     );
   };
 
-  const handleMarkComplete = (questionId: string) => {
-    setMarkedComplete((prev) =>
-      prev.includes(questionId) ? prev.filter(id => id !== questionId) : [...prev, questionId]
+  const markQuestionAsCompleted = (questionId: string) => {
+    setQuestions(prevQuestions => 
+      prevQuestions.map(q => 
+        q.questionId === questionId ? {...q, completed: true} : q
+      )
     );
   };
 
@@ -211,110 +222,37 @@ const QuestionBank: React.FC = () => {
           </button>
         </div>
         <div className="flex flex-wrap items-start mb-4 space-x-2">
-          <div
-            className="relative inline-block mb-2"
-            onMouseEnter={() => handleMouseEnter('subject')}
-            onMouseLeave={() => handleMouseLeave('subject')}
-          >
-            <button className="bg-blue-100 text-blue-600 px-4 py-2 rounded">
-              {filters.subject || 'Subject'}
-            </button>
-            {dropdowns.subject && (
-              <div className="absolute mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-                {subjects.map(subject => (
-                  <a
-                    key={subject}
-                    href="#"
-                    onClick={() => {
-                      handleFilterChange('subject', subject);
-                      setDropdowns({ ...dropdowns, subject: false });
-                    }}
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                  >
-                    {subject}
-                  </a>
-                ))}
-              </div>
-            )}
-          </div>
-          <div
-            className="relative inline-block mb=2"
-            onMouseEnter={() => handleMouseEnter('difficulty')}
-            onMouseLeave={() => handleMouseLeave('difficulty')}
-          >
-            <button className="bg-blue-100 text-blue-600 px-4 py-2 rounded">
-              {filters.difficulty || 'Difficulty'}
-            </button>
-            {dropdowns.difficulty && (
-              <div className="absolute mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-                {difficulties.map(difficulty => (
-                  <a
-                    key={difficulty}
-                    href="#"
-                    onClick={() => {
-                      handleFilterChange('difficulty', difficulty);
-                      setDropdowns({ ...dropdowns, difficulty: false });
-                    }}
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                  >
-                    {difficulty}
-                  </a>
-                ))}
-              </div>
-            )}
-          </div>
-          <div
-            className="relative inline-block mb=2"
-            onMouseEnter={() => handleMouseEnter('year')}
-            onMouseLeave={() => handleMouseLeave('year')}
-          >
-            <button className="bg-blue-100 text-blue-600 px-4 py-2 rounded">
-              {filters.year || 'Year'}
-            </button>
-            {dropdowns.year && (
-              <div className="absolute mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-                {years.map(year => (
-                  <a
-                    key={year}
-                    href="#"
-                    onClick={() => {
-                      handleFilterChange('year', year);
-                      setDropdowns({ ...dropdowns, year: false });
-                    }}
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                  >
-                    {year}
-                  </a>
-                ))}
-              </div>
-            )}
-          </div>
-          <div
-            className="relative inline-block mb=2"
-            onMouseEnter={() => handleMouseEnter('type')}
-            onMouseLeave={() => handleMouseLeave('type')}
-          >
-            <button className="bg-blue-100 text-blue-600 px-4 py-2 rounded">
-              {filters.type || 'Type'}
-            </button>
-            {dropdowns.type && (
-              <div className="absolute mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-                {types.map(type => (
-                  <a
-                    key={type}
-                    href="#"
-                    onClick={() => {
-                      handleFilterChange('type', type);
-                      setDropdowns({ ...dropdowns, type: false });
-                    }}
-                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                  >
-                    {type}
-                  </a>
-                ))}
-              </div>
-            )}
-          </div>
+          {['subject', 'difficulty', 'year', 'type'].map((filterType) => (
+            <div
+              key={filterType}
+              className="relative inline-block mb-2"
+              onMouseEnter={() => handleMouseEnter(filterType)}
+              onMouseLeave={() => handleMouseLeave(filterType)}
+            >
+              <button className="bg-blue-100 text-blue-600 px-4 py-2 rounded">
+                {filters[filterType as keyof typeof filters] || filterType.charAt(0).toUpperCase() + filterType.slice(1)}
+              </button>
+              {dropdowns[filterType as keyof typeof dropdowns] && (
+                <div className="absolute mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                  {(filterType === 'subject' ? subjects :
+                    filterType === 'difficulty' ? difficulties :
+                    filterType === 'year' ? years :
+                    types).map((value) => (
+                    <button
+                      key={value}
+                      onClick={() => {
+                        handleFilterChange(filterType, value);
+                        setDropdowns({ ...dropdowns, [filterType]: false });
+                      }}
+                      className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    >
+                      {value}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
         {filteredQuestions.length > 0 ? (
           filteredQuestions.map((question) => (
@@ -329,9 +267,9 @@ const QuestionBank: React.FC = () => {
               handleNumericalChange={handleNumericalChange}
               handleMarkschemeToggle={handleMarkschemeToggle}
               handleMarkForReview={handleMarkForReview}
-              handleMarkComplete={handleMarkComplete}
-              isMarkedForReview={markedForReview.includes(question.questionId)}
-              isMarkedComplete={markedComplete.includes(question.questionId)}
+              handleMarkComplete={markQuestionAsCompleted}
+              isMarkedForReview={question.reviewed}
+              isMarkedComplete={question.completed}
             />
           ))
         ) : (
