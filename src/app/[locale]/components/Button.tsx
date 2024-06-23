@@ -1,3 +1,5 @@
+"use client"; // Add this directive
+
 import React from 'react'
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {

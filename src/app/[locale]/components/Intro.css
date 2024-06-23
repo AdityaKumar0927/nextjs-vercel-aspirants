@@ -1,0 +1,54 @@
+/* Intro.css */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
+
+.font-cute {
+  font-family: 'Fredoka One', cursive;
+}
+
+.lightbulb-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: bounceIn 2s ease forwards;
+  transform-origin: bottom;
+}
+
+.lightbulb {
+  font-size: 3rem;
+  color: white;
+  transition: color 0.5s;
+}
+
+.lightbulb-container.lit .lightbulb {
+  color: #ffeb3b;
+  animation: light-up 1s ease forwards;
+}
+
+@keyframes bounceIn {
+  0% { transform: translateX(-100vw); }
+  60% { transform: translateX(0) translateY(-30px); }
+  80% { transform: translateY(0); }
+  100% { transform: translateY(-10px); }
+}
+
+@keyframes light-up {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.typed-text {
+  font-family: 'Fredoka One', cursive;
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.cursor.typing {
+  display: inline-block;
+  animation: blink 0.7s step-end infinite;
+}
+
+@keyframes blink {
+  from, to { border-color: transparent; }
+  50% { border-color: black; }
+}

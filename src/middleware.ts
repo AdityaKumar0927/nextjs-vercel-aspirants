@@ -1,26 +1,35 @@
-import createMiddleware from 'next-intl/middleware'
-import { NextRequest } from 'next/server'
-import { locales } from './i18n'
-import { localePrefix } from './navigation'
-type CustomMiddleware = (req: NextRequest) => Promise<NextRequest>
-const customMiddleware: CustomMiddleware = async req => {
-  console.log('Custom middleware executed before next-intl')
-  return req
-}
+import { NextRequest, NextResponse } from 'next/server';
+import { getSession } from '@auth0/nextjs-auth0';
+import createIntlMiddleware from 'next-intl/middleware'; // Adjusted import based on common practices
 
-const intlMiddleware = createMiddleware({
-  locales,
+const protectedRoutes = ['/protected', '/api/protected'];
+
+const intlMiddleware = createIntlMiddleware({
+  locales: ['en', 'fr', 'de', 'es', 'ja', 'ru', 'fa', 'ar'],
   defaultLocale: 'en',
-  localePrefix
-})
+});
 
-export default async function middleware(
-  req: NextRequest
-): Promise<ReturnType<typeof intlMiddleware>> {
-  await customMiddleware(req)
-  return intlMiddleware(req)
+const customMiddleware = async (req: NextRequest) => {
+  const res = NextResponse.next();
+  const session = await getSession(req, res);
+
+  if (!session && protectedRoutes.some(route => req.nextUrl.pathname.startsWith(route))) {
+    const url = req.nextUrl.clone();
+    url.pathname = '/api/auth/login';
+    return NextResponse.redirect(url);
+  }
+
+  return req;
+};
+
+export default async function middleware(req: NextRequest) {
+  const result = await customMiddleware(req);
+  if (result instanceof NextResponse) {
+    return result;
+  }
+  return intlMiddleware(result);
 }
 
 export const config = {
-  matcher: ['/', '/(fr|en|ja|de|ru|es|fa|ar)/:path*']
-}
+  matcher: ['/protected/:path*', '/api/protected/:path*'],
+};
